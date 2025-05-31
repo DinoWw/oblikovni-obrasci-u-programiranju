@@ -77,6 +77,11 @@ void testAnimals(void){
 
 	free(p1); free(p2); free(p3);
 
+	struct Animal p;
+	constructCat(&p, "macka na stacku");
+	animalPrintGreeting(&p);
+
+
 	const char *names[] = {"sled_dog_1", "sled_dog_2", "sled_dog_3", "sled_dog_4"};
 	struct Animal *dogs = createDogs(4, names);
 

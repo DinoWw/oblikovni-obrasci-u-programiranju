@@ -1,0 +1,602 @@
+<!DOCTYPE html public "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="author" content="Sinisa Segvic">
+  <title>Druga laboratorijska vježba iz OOUP</title>
+  <link rel="stylesheet" type="text/css" href="ooup.css" >
+  <link rel="stylesheet" href="./highlight/styles/default.css">
+  <script type="text/javascript" src="./highlight/highlight.pack.js"></script>
+  <script type="text/javascript">hljs.initHighlightingOnLoad();</script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet"> 
+</head>
+
+<body>
+
+<!--TODO
+  objects vs closures
+-->
+
+<h2>Druga laboratorijska vježba iz Oblikovnih obrazaca u programiranju:<br>
+načela oblikovanja, strategija, promatrač</h2>
+
+<p>
+<h4 id="z2">0. Proceduralni stil i načela oblikovanja (5% bodova, bilo koji jezik)</h4>
+
+Prevedite i isprobajte priloženi dopunjeni program s predavanja 
+(str.~``Logička načela: NBP i proceduralni stil?'').
+
+<pre><code class="c">  #include &lt;iostream&gt;
+  #include &lt;assert.h&gt;
+  #include &lt;stdlib.h&gt;
+
+  struct Point{
+    int x; int y;
+  };
+  struct Shape{
+    enum EType {circle, square};
+    EType type_;
+  };
+  struct Circle{
+     Shape::EType type_;
+     double radius_;
+     Point center_;
+  };
+  struct Square{
+     Shape::EType type_;
+     double side_;
+     Point center_;
+  };
+  void drawSquare(struct Square*){
+    std::cerr &lt;&lt;"in drawSquare\n";
+  }
+  void drawCircle(struct Circle*){
+    std::cerr &lt;&lt;"in drawCircle\n";
+  }
+  void drawShapes(Shape** shapes, int n){
+    for (int i=0; i&lt;n; ++i){
+      struct Shape* s = shapes[i];
+      switch (s-&gt;type_){
+      case Shape::square:
+        drawSquare((struct Square*)s);
+        break;
+      case Shape::circle:
+        drawCircle((struct Circle*)s);
+        break;
+      default:
+        assert(0); 
+        exit(0);
+      }
+    }
+  }
+  int main(){
+    Shape* shapes[4];
+    shapes[0]=(Shape*)new Circle;
+    shapes[0]-&gt;type_=Shape::circle;
+    shapes[1]=(Shape*)new Square;
+    shapes[1]-&gt;type_=Shape::square;
+    shapes[2]=(Shape*)new Square;
+    shapes[2]-&gt;type_=Shape::square;
+    shapes[3]=(Shape*)new Circle;
+    shapes[3]-&gt;type_=Shape::circle;
+
+    drawShapes(shapes, 4);
+  }
+</code></pre>
+
+<p>
+Dodajte metodu moveShapes koja pomiče 
+oblike zadane prvim argumentom
+za translacijski pomak 
+određen ostalim argumentima. 
+Ispitajte dodanu funkcionalnost.
+<p>
+Dodajte razred Rhomb.
+Dodajte jedan objekt tipa Rhomb u listu objekata u main().
+Sjetite se, sad moramo promijeniti i drawShapes().
+<p>
+Ovo je domino-efekt (krutost), 
+kojeg ćemo kasnije pokušati zauzdati.
+Za probu, zaboravite adekvatno promijeniti moveShapes().
+Isprobajte ponovo.
+Sad bi moveShapes trebao "puknuti".
+To je krhkost uzrokovana redundancijom.
+Ni to ne želimo imati u programu.
+<p>
+Konačno, implementirajte rješenje s predavanja,
+i komentirajte njegova svojstva.
+
+
+<p>
+<h4 id="z1">1. Nadogradnja bez promjene u C-u (20% bodova, C)</h4>
+
+Napišite u C-u funkciju <code>mymax</code>
+koja pronalazi najveći element zadanog polja.
+Vaša implementacija treba biti primjenljiva
+na polja elemenata svih mogućih tipova:
+cijelih brojeva, pokazivača ili struktura
+te omogućiti rad s različitim vrstama usporedbi.
+Kako biste ostvarili nadogradivost bez promjene,
+funkcija <code>mymax</code> treba primiti
+pokazivač na kriterijsku funkciju koja vraća 1
+ako je njen prvi argument veći od drugoga, a 0 inače.
+
+Funkciju oblikujte prema primjeru funkcije
+<code>qsort</code> standardne biblioteke:
+<pre><code class="c">const void* mymax(
+  const void *base, size_t nmemb, size_t size,
+  int (*compar)(const void *, const void *));
+</code></pre>
+
+Definirajte kriterijske funkcije
+za usporedbu cijelih brojeva, znakova
+i znakovnih nizova.
+Nazovite te kriterijske funkcije
+<code>gt_int</code>,
+<code>gt_char</code>
+i <code>gt_str</code>.
+U izvedbi funkcije <code>gt_str</code>,
+posao delegirajte funkciji <code>strcmp</code>.
+
+<p>
+Pokažite da vaša funkcija može pronaći
+najveće elemene sljedećih nizova:
+<pre><code class="C">int arr_int[] = { 1, 3, 5, 7, 4, 6, 9, 2, 0 };
+char arr_char[]="Suncana strana ulice";
+const char* arr_str[] = {
+   "Gle", "malu", "vocku", "poslije", "kise",
+   "Puna", "je", "kapi", "pa", "ih", "njise"
+};
+</code></pre>
+
+<h4 id="z4">2. Nadogradnja bez promjene primjenom predložaka (10% bodova, C++)</h4>
+
+U prethodnom zadatku smo vidjeli da se
+nadogradnja bez promjene u C-u može postići
+delegiranjem posla preko pokazivača na funkciju.
+Međutim, takvim mehanizmom ne bismo mogli
+ostvariti nadogradivost s obzirom na 
+različite vrste pretraživanih spremnika.
+U ovom zadatku ćemo istražiti kako
+takvu funkcionalnost postići predlošcima.
+
+<p>
+Za početak, izvedite identičnu funkcionalnost
+iz prethodnog zadatka,
+ali na način da nadogradivost bez promjene
+ostvarite funkcijskim predloškom (engl. template function).
+Oblikujte vaš predložak prema primjeru funkcije
+<a href="http://www.cplusplus.com/reference/algorithm/find_if/"><code>find_if</code></a>
+standardne biblioteke:
+<pre><code class="C++">template &lt;typename Iterator, typename Predicate&gt;
+Iterator mymax(
+  Iterator first, Iterator last, Predicate pred){
+// ...
+}
+</code></pre>
+
+<p>
+Obratite pažnju na to da drugi argument funkcije mymax
+treba pokazivati *iza* posljednjeg elementa polja,
+kao što je i uobičajeno u bibliotekama C++-a.
+Prednost takve konvencije je u tome što omogućava
+jasno predstavljanje praznih nizova:
+u tom slučaju imamo <code>first==last</code>.
+
+<p>
+Umjesto kriterijskim funkcijama koje primaju
+pokazivače na podatke (kao u prvom zadatku),
+ljepši kod dobit ćete s kriterijskim funkcijama
+koje primaju podatke ili reference na njih.
+Iskoristite mogućnost da pri pozivu predloška
+ne navedete parametre predloška,
+nego prepustite prevoditelju da ih pogodi sam,
+kao u sljedećem primjeru:
+
+<pre><code class="C++">int arr_int[] = { 1, 3, 5, 7, 4, 6, 9, 2, 0 };
+int main(){
+  const int* maxint = mymax( &arr_int[0],
+    &arr_int[sizeof(arr_int)/sizeof(*arr_int)], gt_int);
+  std::cout &lt;&lt;*maxint <<"\n";
+}
+</code></pre>
+
+<p>
+Pokažite da vaš predložak možete primijeniti 
+i na stringove te na standardne spremnike C++-a
+<code>vector</code> i <code>set</code>.
+Komentirajte prednosti i nedostatke ove implementacije
+u odnosu na implementaciju iz prethodnog zadatka.
+
+<h4 id="z4">3. Nadogradnja bez promjene u Pythonu (15% bodova, Python)</h4>
+
+Python je jezik koji omogućava
+fleksibilnije izražavanje od C-a i C++-a.
+Stoga je logično da ćemo i ovdje htjeti postići
+podršku različitih algoritama usporedbe
+te podršku za različite načine pohrane objekata.
+Vaš zadatak je napisati funkciju <code>mymax</code>
+koja pronalazi najveći element zadanog spremnika.
+Vaša funkcija treba biti primjenljiva na sve 
+pobrojive objekte (engl. iterable object),
+odnosno na sve vrste spremnika i "spremnika"
+koje možemo obići naredbom <code>for</code>
+(liste, rječnike, generatore, ...).
+Pored toga, vaša funkcija treba omogućiti
+zadavanje svih zamislivih načina usporedbe elemenata.
+
+<p>
+S obzirom na to da je Python dinamički jezik,
+usporedbu ćemo modelirati
+funkcijskim argumentom <code>key</code>
+koji elemente pobrojivog objekta preslikava
+u objekte nad kojima je uređaj - dobro definiran.
+Za ugrađene tipove tako nećemo morati raditi ništa
+(jer su operatori usporedbe nad njima definirani),
+osim ako budemo htjeli izmijeniti kriterij usporedbe.
+Neka struktura vaše funkcije bude:
+<pre><code class="python">def mymax(iterable, key):
+  # incijaliziraj maksimalni element i maksimalni ključ
+  max_x=max_key=None
+
+  # obiđi sve elemente
+  for x in iterable:
+    # ako je key(x) najveći -> ažuriraj max_x i max_key
+
+  # vrati rezultat
+  return max_x
+</code></pre>
+
+<p>
+Pokažite kako biste jednim pozivom vaše funkcije
+u listi stringova pronašli najdulju riječ.
+Argument <code>key</code> zadajte neimenovanom funkcijom
+koju ćete zadati ključnom rječju <code>lambda</code>.
+Sljedeći primjer ilustrira rad s bezimenim funkcijama:
+<pre><code class="python"># napravi bezimenu funkciju i poveži je s imenom f
+  f = lambda x: 2*x+3
+
+  # primijeni bezimenu funkciju
+  f(3) # 9
+</code></pre>
+
+<p>
+Izmijenite zaglavlje funkcije <code>mymax</code>
+tako da omogućite njeno pozivanje
+sa samo jednim argumentom te
+neka se u tom slučaju kao kriterij koristi
+uređaj elemenata pobrojivog objekta.
+Ovu funkcionalnost ostvarite
+na način da argumentu <code>key</code>
+podrazumijevano dodijelite funkciju identiteta
+koju ćete zadati prikladnom neimenovanom funkcijom.
+Vaša funkcija trebala bi moći obraditi sljedeće upite:
+<pre><code class="python">maxint = mymax([1, 3, 5, 7, 4, 6, 9, 2, 0])
+maxchar = mymax("Suncana strana ulice")
+maxstring = mymax([
+  "Gle", "malu", "vocku", "poslije", "kise",
+  "Puna", "je", "kapi", "pa", "ih", "njise"])
+</code></pre>
+
+<p>
+Pronađite najskuplji proizvod u rječniku D 
+koji sadrži cjenik pekare na uglu ulice:
+<pre><code class="python">D={'burek':8, 'buhtla':5}
+</code></pre>
+Zadatak ostvarite tako da funkciji <code>mymax</code>
+kao ključ pošaljete metodu <code>get</code> rječnika <code>D</code>.
+Objasnite kako i zašto metodu možemo koristiti kao slobodnu funkciju.
+
+<p>
+Neka je kolekcija osoba zadana listom 
+čiji su elementi parovi <code>(ime,prezime)</code>.
+Pronađite posljednju osobu prema leksikografskom poretku
+primjenom funkcije <code>mymax</code>.
+Pomoć: nad n-torkama Pythona je definiran uređaj
+tako da je <code>x&lt;y</code> ako je <code>x[0]&lt;y[0]</code>
+ili <code>x[0]==y[0] and x[1:]&lt;y[1:]</code>,
+pri čemu <code>x[1:]</code> označava sve elemente n-torke
+počevši od indeksa 1 na dalje.
+
+<h4 id="z4">4. Generiranje slijeda brojeva i statističkih pokazatelja (15% bodova, bilo koji jezik)</h4>
+
+Razmatramo komponentu <code>DistributionTester</code>
+čiji zadatak je generirati prikladni niz cijelih brojeva
+te ispisati 10., 20., ..., i 90.
+<a href="http://en.wikipedia.org/wiki/Percentile">percentil</a> 
+njihove distribucije.
+Generiranje cijelih brojeva trebalo bi biti podržano
+na svaki od sljedećih načina:
+<ul><li>
+  slijedno, u ovisnosti o zadanim granicama intervala
+  i koraku uvećanja;
+<li>
+  slučajno, u ovisnosti o zadanim 
+  parametrima normalne distribucije
+  i željenom broju elemenata;
+<li>
+  kao Fibonaccijev niz u ovisnosti 
+  o zadanom ukupnom broju elemenata.
+</ul>
+Komponenta <code>DistributionTester</code>
+također treba podržavati 
+određivanje p-tog percentila distribucije
+zadanog niza cijelih brojeva
+na svaki od sljedećih načina:
+<ul><li>
+  kao element čiji je položaj u sortiranom nizu (počevši od 1) 
+  najbliži položaju percentila <code>n_p</code> definiranog s
+  <code>n_p = p*N/100 + 0.5</code>, 
+  gdje N odgovara broju elemenata;
+  primjerice, 80. percentil niza (1,10,50) bi u tom slučaju bio 50
+  (<a href="https://en.wikipedia.org/wiki/Percentile#The_nearest-rank_method">detaljnije</a>). 
+<li>
+  kao interpoliranu vrijednost između elemenata 
+  <code>v[i]</code> i <code>v[i+1]</code>
+  za čije percentilne položaje vrijedi 
+  <code>p(v[i]) < p < p(v[i+1])</code>;
+  percentilni položaj elementa <code>v_i</code>
+  na rednom broju <code>i</code>
+  računamo kao <code>p(v[i]) = 100*(i-0.5)/N</code>,
+  gdje N odgovara broju elemenata, a
+  redni broj <code>i</code> počinje od jedan;
+  traženu interpoliranu vrijednost <code>v(p)</code> 
+  za zadani percentil <code>p</code> određujemo izrazom 
+  <code>v(p) = v[i] + N * (p-p(v[i]))*(v[i+1]-v[i])/100</code>;
+  za percentile koji su manji od p(v[1])
+  odnosno veći od p(v[N]) vraćamo 
+  <code>v[1]</code> odnosno <code>v[N]</code>;
+  primjerice, 80. percentil niza (1,10,50) bi u tom slučaju bio 46
+  (<a href="https://en.wikipedia.org/wiki/Percentile#The_linear_interpolation_between_closest_ranks_method">detaljnije</a>). 
+</ul>
+
+<p>
+Komponenta <code>DistributionTester</code>
+mora biti oblikovana na način 
+da omogućava uključivanje drugih načina
+stvaranja cijelih brojeva i računanja percentila,
+i to bez potrebe za mijenjanjem same komponente.
+
+<p>
+Oblikujte rješenje problema u skladu 
+s oblikovnim obrascem Strategija,
+i demonstrirajte funkcionalnost rješenja 
+prikladnim ispitnim programom.
+Ispitni program treba stvoriti primjerak
+razreda <code>DistributionTester</code>,
+prikladno ga konfigurirati,
+te pokrenuti obradu koja rezultira
+ispisom percentila distribucije. 
+<!--
+Razmotri svojstva svoje organizacije
+i usporedi je s altenativnim rješenjem
+koje bi se dobilo prema obrascu Okvirna metoda.
+-->
+
+<h4 id="z5">5. Fleksibilno učitavanje i prikazivanje slijeda brojeva (15% bodova, bilo koji jezik)</h4>
+
+Potrebno je ostvariti programsko rješenje sa sljedećim komponentama.
+
+<p>
+<code>SlijedBrojeva</code> je komponenta koja interno pohranjuje kolekciju cijelih
+brojeva. Pri stvaranju te komponente, kolekcija je prazna. Komponentu
+treba oblikovati na način da elemente dobiva od nekog izvora brojeva. U
+sustavu trebaju postojati različite implementacije izvora brojeva:
+<code>TipkovnickiIzvor</code> koji od korisnika učitava broj po broj s tipkovnice te
+<code>DatotecniIzvor</code> koji brojeve čita iz datoteke. 
+Neka izvori svoje iscrpljivanje signaliziraju 
+vraćanjem vrijednosti -1 (ili na neki drugi prikladan način).
+U svim ostalim slučajevima očekuje se 
+da izvori uvijek generiraju nenegativne brojeve. 
+Komponenta <code>SlijedBrojeva</code> treba biti oblikovana 
+na način da je prilikom njezinog stvaranja 
+moguće umetnuti odgovarajuć izvor brojeva. 
+Rješenje također
+treba biti takvo da omogućava transparentno dodavanje novih
+izvora bez promjene koda komponente <code>SlijedBrojeva</code>. 
+Razmislite o kojem se tu
+oblikovnom obrascu radi i implementirajte rješenje u skladu s njime.
+
+Komponenta <code>SlijedBrojeva</code> treba
+započeti preuzimanje brojeva od podešenog izvora 
+kada se pozove metoda <code>kreni</code> 
+koja potom svake sekunde
+od izvora pokuša preuzeti po jedan broj. 
+Ako izvoru treba više vremena
+za generiranje broja, preuzimanje sljedećeg broja 
+potrebno je obaviti jednu
+sekundu nakon završetka prethodnog čitanja, 
+ma koliko ono trajalo.
+
+Programsko rješenje treba napisati na način da je prilikom svake
+promjene interne kolekcije komponente <code>SlijedBrojeva</code> 
+moguće obaviti <b>jednu ili
+više</b> akcija. Akcije koje treba podržati su sljedeće:
+<ol><li>
+u tekstovnu datoteku zapisati sve elemente koji se
+trenutno nalaze u kolekciji te datum i vrijeme zapisa;
+<li>
+temeljem elemenata koji se trenutno nalaze u kolekciji potrebno je na
+zaslon ispisati sumu svih elemenata;
+<li>
+temeljem elemenata koji se trenutno nalaze u kolekciji potrebno je na
+zaslon ispisati prosjek svih elemenata;
+<li>
+temeljem elemenata koji se trenutno nalaze u kolekciji potrebno je na zaslon ispisati medijan svih elemenata.
+</ol>
+Rješenje treba biti takvo da omogućava konfiguriranje akcija koje treba
+poduzeti te transparentno dodavanje novih akcija bez potrebe za
+mijenjanjem komponente <code>SlijedBrojeva</code> (primjerice, stupčasti grafički
+prikaz i slično). Razmislite koji je oblikovni obrazac prikladan za
+rješavanje ovog problema i implementirajte rješenje u skladu s tim
+oblikovnim obrascem.
+
+<h4 id="z7">6. Tablični kalkulator (20% bodova, bilo koji jezik)</h4>
+
+Tablični kalkulator sadrži tablicu polja
+koja mogu sadržavati ili konstantu ili matematički izraz.
+Matematički izrazi mogu referencirati vrijednosti drugih polja
+koja pak mogu ovisiti o vrijednostima trećih polja itd. 
+Kad god se sadržaj nekog polja X promijeni
+potrebno je ponovo izračunati vrijednosti svih polja
+čiji izrazi neposredno ili posredno ovise o polju X.
+
+<p>
+Napišite programsko rješenje koje podržava
+zadavanje tablice s numeričkim konstantama 
+i jednostavnim računskim izrazima
+(dovoljno je podržati zbrajanje s dva operanda),
+te ispisivanje njenog sadržaja.
+Rješenje mora omogućiti automatsko prosljeđivanje
+izmjena kroz proizvoljno dugačke lance ovisnosti.
+U slučaju kružnih ovisnosti, program treba baciti iznimku.
+Navedite kojem obrascu odgovara vaše rješenje te nacrtajte dijagram razreda.
+
+<p>
+Upute:
+<ul>
+<li>
+  Polja tablice modelirajte primjercima razreda <code>Cell</code>.
+<li>
+  Neka polje čuva svoj sadržaj u
+  tekstnom podatkovnom članu <code>exp</code>.
+  Primjerice, sadržaj može biti <code>"5"</code>
+  ili <code>"A1+A2"</code>.
+<li>
+  Neka polje čuva cacheiranu vrijednost sadržaja
+  u numeričkom podatkovnom članu <code>value</code>.
+<li>
+  Tablicu modelirajte razredom <code>Sheet</code>
+  koji sadrži 2D polje objekata razreda <code>Cell</code>.
+<li>
+  Neka tablica ima metodu <code>cell(ref)</code>
+  koja dohvaća referencu na polje zadano
+  tekstnom adresom <code>ref</code>.
+  Npr. <code>sheet.cell("A1")</code>
+  vraća polje na koordinatama (0,0).
+<li>
+  Neka tablica ima metodu <code>set(ref, content)</code>
+  koja sadržaj polja na adresi <code>ref</code>
+  postavlja na tekst <code>content</code>.
+<li>
+  Neka tablica ima metodu <code>getrefs(cell)</code>
+  koja vraća listu svih polja
+  koja zadano polje referencira.
+  Npr. ako vrijedi <code>cell.exp=="A3-B4"</code>, 
+  metoda treba vratiti polja na adresama 
+  <code>A3</code> i <code>B4</code>.
+  Uputa: slobodno koristite neku biblioteku
+  koja podržava regularne izraze
+  (npr. standardni modul <code>re</code> Pythona).
+<li>
+  Neka tablica ima metodu <code>evaluate(cell)</code>,
+  koja izračunava numeričku vrijednost zadanog polja.
+  Uputa 1: radi jednostavnosti podržite samo zbrajanje.
+  Uputa 2: slobodno koristite neku biblioteku
+  koja podržava izračunavanje izraza.
+  (npr. standardni modul <code>ast</code> Pythona).
+<li>
+  <!--
+  Organizacija treba omogućiti jednostavno dodavanje
+  novih oblika predstavljanja podataka iz tablice,
+  npr. grafovi, histogrami i sl.
+  -->
+  Propagiranje promjena provedite na razini ćelija,
+  bez prozivanja tablice, osim za izračunavanje 
+  novih vrijednosti izraza.
+  Kako biste omogućili pozivanje metode
+  <code>evaluate</code>,
+  svaka ćelija treba imati referencu na matičnu tablicu.
+</ul>
+
+<p>
+Ispravnost vašeg programa možete isprobati
+sljedećim ispitnim programom (Python):
+<pre><code class="Python">if __name__=="__Main__":
+  s=Sheet(5,5)
+  print()
+
+  s.set('A1','2')
+  s.set('A2','5')
+  s.set('A3','A1+A2')
+  s.print()
+  print()
+
+  s.set('A1','4')
+  s.set('A4','A1+A3')
+  s.print()
+  print()
+
+  try:
+    s.set('A1','A3')
+  except RuntimeError as e:
+    print("Caught exception:",e)
+  s.print()
+  print()
+</code></pre>
+
+<p>
+Na kraju navodimo kratki primjer za evaluiranje izraza modulom <code>ast</code>.
+Radi jednostavnosti, primjer radi samo za zbrajanje.
+<a href="https://stackoverflow.com/questions/20748202/valueerror-malformed-string-when-using-ast-literal-eval">Ovdje</a>
+možete pogledati kako omogućiti i ostale operatore.
+
+<p>
+Prvo ćemo definirati funkciju za evaluiranje izraza
+s varijablama i operatorom <code>+</code>:
+<pre><code class="Python">import ast
+
+def eval_expression(exp, variables={}):
+  def _eval(node):
+    if isinstance(node, ast.Num):
+      return node.n
+    elif isinstance(node, ast.Name):
+      return variables[node.id]
+    elif isinstance(node, ast.BinOp):
+      return _eval(node.left) + _eval(node.right)
+    else:
+      raise Exception('Unsupported type {}'.format(node))
+
+  node = ast.parse(exp, mode='eval')
+  return _eval(node.body)
+</code></pre>
+
+<p>
+Sada primjenom te funkcije možemo izračunavati izraze 
+prema sljedećem primjeru:
+<pre><code class="Python"># rječnik vrijednosti varijabli:
+D={'a':5, 'b':3}
+# definirajmo izraz s varijablama:
+exp_var='a+b+a'
+# izračunajmo vrijednost izraza:
+rv = eval_expression(exp_var, D)
+# 5+3+5=13
+print(rv)
+</code></pre>
+
+
+<div id="footer">
+<hr style="height:5px">
+  <table width="100%" style="margin-left:auto; margin-right:auto;">
+  <tr> <td style="width:100%; text-align:left" valign="top">
+    Izrađeno 
+    <a href="http://www.vim.org/">vi</a>-jem i
+    <a href="http://www.gedit.org/">gedit</a>om. 
+
+    <!--flastmod file="${DOCUMENT_NAME}"-->
+    Posljednja promjena: Friday, 12-Jan-2024 00:34:22 CET
+  <tr> <td style="width:50%; text-align:left" valign="top">
+    Svi komentari su dobrodošli: 
+    <img SRC="../images/email.png" alt="sinisa segvic at fer hr" 
+                   width=150 style="vertical-align:text-bottom">
+    <td style="width:50%; text-align:right" valign="bottom">
+    <A href="http://www.zemris.fer.hr/~ssegvic/ooup">Povratak</a>
+  </table>
+
+  <p>
+</div>
+
+
+</body>
+</html>
+
