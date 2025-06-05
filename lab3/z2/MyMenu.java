@@ -1,8 +1,10 @@
+import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
 import java.awt.event.KeyEvent;
+import java.io.File;
 
 public class MyMenu extends JMenuBar implements UndoManagerSubscriber, ClipboardObserver, CursorObserver {
 
@@ -34,7 +36,9 @@ public class MyMenu extends JMenuBar implements UndoManagerSubscriber, Clipboard
     private UndoManager undoManager = UndoManager.instance();
     private TextEditorModel tem;
 
-     MyMenu (TextEditorModel tem) {
+    private JFileChooser fileChooser = new JFileChooser();
+
+    MyMenu (TextEditorModel tem) {
         this.tem = tem;
 
         addMenus();
@@ -77,10 +81,14 @@ public class MyMenu extends JMenuBar implements UndoManagerSubscriber, Clipboard
         deleteSelectionItem.setEnabled(false);
     }
     private void addListeners() {
-        // TODO
-        openItem.addActionListener(null);
-        saveItem.addActionListener(null);
+        openItem.addActionListener((event) -> {
 
+        if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            tem.loadFromFile(file);
+        }
+        });
+        saveItem.addActionListener((event) -> tem.save());
         exitItem.addActionListener((event) -> System.exit(0));
 
         undoItem.addActionListener((event) -> undoManager.undo(tem));
@@ -90,7 +98,10 @@ public class MyMenu extends JMenuBar implements UndoManagerSubscriber, Clipboard
         pasteItem.addActionListener((event) -> tem.softPaste());
         pasteAndTakeItem.addActionListener((event) -> tem.softPaste()); //TODO
         deleteSelectionItem.addActionListener((event) -> tem.deleteRange(tem.getSelectionRange())); 
-        clearDocumentItem.addActionListener((event) -> tem.deleteRange(new LocationRange(0, 0, tem.lines.get(tem.lines.size()-1).length(), tem.lines.size()-1))); 
+        clearDocumentItem.addActionListener((event) -> tem.clearDocument()); 
+
+        cursorToDocumentStartItem.addActionListener((event) -> tem.cursorToDocumentStart()); 
+        cursorToDocumentEndItem.addActionListener((event) -> tem.cursorToDocumentEnd()); 
 
     }
 

@@ -1,10 +1,10 @@
 
-run: frame
-	java frm
+run: main
+	java Main
 	make clean
 
-frame: frm.java MyFrame.java
-	javac frm.java
+main: Main.java MyMenu.java SelectionState.java TextEditor.java TextEditorModel.java UndoManager.java ClipboardStack.java StatusBar.java
+	javac Main.java
 
 
 clean:

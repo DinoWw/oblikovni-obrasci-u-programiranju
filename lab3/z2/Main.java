@@ -2,20 +2,22 @@ import java.awt.Point;
 
 import javax.swing.JFrame;
 
-class frm {
+public class Main {
 
   public static void main(String[] args){
     // MyFrame f = new MyFrame();
     // f.setVisible(true);
 
-    TextEditorModel model = new TextEditorModel("Text sa \nvise redaka.\nJos jedan red! (Ali ovaj je malo dulji (jako jako jako dugacak))");
+    TextEditorModel model = new TextEditorModel("Text sa \nvise redaka.\nJos jedan red!");
 
     TextEditor editor = new TextEditor(model);
     MyMenu menu = new MyMenu(model);
-    
+    StatusBar statusBar = new StatusBar(model);
     
     JFrame mainFrame = new JFrame();
-
+    
+    mainFrame.add(statusBar);
+    
     mainFrame.setJMenuBar(menu);
     
     mainFrame.add(editor);
@@ -32,5 +34,7 @@ class frm {
     editor.setFocusable(true);
     editor.requestFocus();
     
+    
+    statusBar.setBounds(0, mainFrame.getHeight()-90, mainFrame.getWidth(), 30);
   }
 }

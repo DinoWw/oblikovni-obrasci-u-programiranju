@@ -1,8 +1,13 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 
 class TextEditorModel {
@@ -16,7 +21,7 @@ class TextEditorModel {
     private Set<CursorObserver> cursorObservers;
     private Set<TextObserver> textObservers;
 
-
+    private File ofFile;
 
 
     public TextEditorModel (String text){
@@ -81,6 +86,17 @@ class TextEditorModel {
     void setCursorLocation(Location loc) {
         cursorLocation.x = loc.x;
         cursorLocation.y = loc.y;
+    }
+
+    void cursorToDocumentStart() {
+        cursorLocation.x = 0;
+        cursorLocation.y = 0;
+        notifyCursorObservers();
+    }
+    void cursorToDocumentEnd() {
+        cursorLocation.x = lines.get(lines.size()-1).length();
+        cursorLocation.y = lines.size()-1;
+        notifyCursorObservers();
     }
 
     private String getLine() {
@@ -177,6 +193,11 @@ class TextEditorModel {
         this.cursorLocation.y = r.start.y;
 
         notifyTextObservers();
+    }
+
+    void clearDocument() {
+        deleteRange(new LocationRange(0, 0, lines.get(lines.size()-1).length(), lines.size()-1));
+        lines.add("");
     }
 
     LocationRange getSelectionRange() {
@@ -290,6 +311,40 @@ class TextEditorModel {
     void redo() {
         undoManager.redo(this);
         notifyTextObservers();
+    }
+
+    boolean loadFromFile(File file) {
+        try {
+            Scanner myReader = new Scanner(file);
+
+            lines = new ArrayList<>();
+
+            while (myReader.hasNextLine()) {
+                lines.add(myReader.nextLine());
+            }
+            myReader.close();
+        } catch (FileNotFoundException e) {
+            return false;
+        }
+        ofFile = file;
+        notifyTextObservers();
+        return true;
+    }
+
+    boolean save() {
+        if(null == ofFile) {
+            return false;
+        }
+        try {
+            FileWriter myWriter = new FileWriter(ofFile);
+            for(String line : lines) {
+                myWriter.write(line);
+            }
+            myWriter.close();
+        } catch (IOException e) {
+            return false;
+        }
+        return true;
     }
 
 }
