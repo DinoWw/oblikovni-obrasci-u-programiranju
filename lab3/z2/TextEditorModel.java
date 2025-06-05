@@ -10,7 +10,7 @@ class TextEditorModel {
     public Location cursorLocation;
     public LocationRange selectionRange;
     
-    private ClipboardStack clipboard;
+    public ClipboardStack clipboard;
     private UndoManager undoManager = UndoManager.instance();
 
     private Set<CursorObserver> cursorObservers;
@@ -323,6 +323,10 @@ class LocationRange {
     LocationRange(LocationRange range) {
         this.start = range.start;
         this.end = range.end;
+    }
+
+    boolean empty() {
+        return start.x == end.x && start.y == end.y;
     }
 }
 

@@ -27,6 +27,7 @@ class TextEditor extends JPanel implements KeyListener, CursorObserver, TextObse
 
     }
     
+    @Override
     public void paintComponent(Graphics g) {  
         // BG 
         setBackground(Color.WHITE);

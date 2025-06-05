@@ -11,8 +11,12 @@ class frm {
     TextEditorModel model = new TextEditorModel("Text sa \nvise redaka.\nJos jedan red! (Ali ovaj je malo dulji (jako jako jako dugacak))");
 
     TextEditor editor = new TextEditor(model);
-
+    MyMenu menu = new MyMenu(model);
+    
+    
     JFrame mainFrame = new JFrame();
+
+    mainFrame.setJMenuBar(menu);
     
     mainFrame.add(editor);
     mainFrame.setTitle("OOUP");

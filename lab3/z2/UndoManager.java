@@ -31,7 +31,7 @@ public class UndoManager {
         action.execute_undo(tem);
         redoStack.push(action);
 
-        if(undoStack.empty()) {
+        if(undoStack.empty() || redoStack.size() == 1) {
             updateSubscribers();
         }
     } 
@@ -46,7 +46,7 @@ public class UndoManager {
         action.execute_do(tem);
         undoStack.push(action);
 
-        if(redoStack.empty()) {
+        if(redoStack.empty() || undoStack.size() == 1) {
             updateSubscribers();
         }
     } 
