@@ -69,6 +69,7 @@ public abstract class AbstractGraphicalObject implements GraphicalObject{
             lis.graphicalObjectChanged(this);
         }
     }
+    
     protected void alertGraphicalObjectSelectionChanged() {
         for(GraphicalObjectListener lis : listeners) {
             lis.graphicalObjectSelectionChanged(this);

@@ -21,7 +21,7 @@ public interface GraphicalObject {
 	double selectionDistance(Point mousePoint);
 
 	// Podrška za crtanje (dio mosta)
-	// void render(Renderer r);
+	void render(Renderer r);
 	
 	// Observer za dojavu promjena modelu
 	public void addGraphicalObjectListener(GraphicalObjectListener l);

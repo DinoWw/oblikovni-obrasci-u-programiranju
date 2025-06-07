@@ -2,15 +2,26 @@ package src.hr.fer.ooup.lab4.model;
 
 public class Oval extends AbstractGraphicalObject {
 
+	public final static double RESOLUTION = 50;
+
     private Point center;
 
-    Oval(Point right, Point bottom) {
+    public Oval(Point right, Point bottom) {
             super(new Point[]{right, bottom});
-            this.center = new Point(bottom.getX(), right.getY());
+            calculateCenter();
     }
-    Oval() {
+    public Oval() {
             super(new Point[]{new Point(10, 0), new Point(0, 10)});
-            this.center = new Point(getHotPoint(0).getX(), getHotPoint(1).getY());
+            calculateCenter();
+    }
+
+    public void translate(Point point) {
+        super.translate(point);
+        calculateCenter();
+    }
+
+    private void calculateCenter() {
+        this.center = new Point(getHotPoint(1).getX(), getHotPoint(0).getY());
     }
 
     @Override
@@ -43,5 +54,33 @@ public class Oval extends AbstractGraphicalObject {
     @Override
     public GraphicalObject duplicate() {
         return new Oval(getHotPoint(0), getHotPoint(1));
+    }
+    @Override
+    public void render(Renderer r) {
+        final int hpSize = 2;
+        
+        Point h1 = getHotPoint(0);
+        Point h2 = getHotPoint(1);
+        Point prevPoint = getHotPoint(0);
+        System.out.println(center.getX() + "x y" + center.getY());
+        for(double a = 0; a < Math.TAU; a += Math.TAU / 50) {
+            Point nextPoint = new Point(
+                (int)( center.getX() + (h1.getX()-center.getX())*Math.cos(a) ), 
+                (int)( center.getY() + (h2.getY()-center.getY())*Math.sin(a) ));
+
+            r.drawLine(prevPoint, nextPoint);
+
+            prevPoint = nextPoint;
+        }
+
+
+        for(int i = 0; i < getNumberOfHotPoints(); i++) {
+            Point p = getHotPoint(i);
+            r.fillPolygon(new Point[]{
+                new Point(p.getX()-hpSize, p.getY()-hpSize), 
+                new Point(p.getX()-hpSize, p.getY()+hpSize), 
+                new Point(p.getX()+hpSize, p.getY()+hpSize),
+                new Point(p.getX()+hpSize, p.getY()-hpSize)});
+        }
     }
 }

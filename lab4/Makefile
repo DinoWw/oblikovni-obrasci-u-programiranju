@@ -1,10 +1,10 @@
 
 run: main
-	java src.hr.fer.ooup.lab4.GUI
+	java src.hr.fer.ooup.lab4.Main
 	make clean
 
 main: 
-	javac src/hr/fer/ooup/lab4/GUI.java
+	javac src/hr/fer/ooup/lab4/Main.java
 
 
 clean:
