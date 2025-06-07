@@ -116,14 +116,13 @@ class TextEditorModel {
             cursorLocation.y --;
             cursorLocation.x = lineUp.length();
 
-            undoManager.push( new EditAction(EditAction.Action.TEXT_REMOVE, cursorLocation, "\n") );
+            undoManager.push( new EditActionDelete(cursorLocation, "\n") );
         }
         else {
             StringBuilder sb = new StringBuilder(getLine());
 
             undoManager.push( 
-                new EditAction(
-                    EditAction.Action.TEXT_REMOVE, 
+                new EditActionDelete(
                     new Location(cursorLocation.x-1, cursorLocation.y), 
                     Character.toString(getLine().charAt(cursorLocation.x))
             ));
@@ -148,7 +147,7 @@ class TextEditorModel {
             lines.set(cursorLocation.y, getLine().concat(lineDown));
             lines.remove(cursorLocation.y+1);
             
-            undoManager.push( new EditAction(EditAction.Action.TEXT_REMOVE, cursorLocation, "\n") );
+            undoManager.push( new EditActionDelete(cursorLocation, "\n") );
         }
         else {
             StringBuilder sb = new StringBuilder(getLine());
@@ -156,8 +155,7 @@ class TextEditorModel {
             lines.set(cursorLocation.y, sb.toString());
 
             undoManager.push( 
-                new EditAction(
-                    EditAction.Action.TEXT_REMOVE, 
+                new EditActionDelete(
                     cursorLocation, 
                     Character.toString(getLine().charAt(cursorLocation.x))
             ));
@@ -187,7 +185,7 @@ class TextEditorModel {
             }
         }
 
-        undoManager.push(new EditAction(EditAction.Action.TEXT_REMOVE, r.start, removedText.toString()));
+        undoManager.push(new EditActionDelete(r.start, removedText.toString()));
 
         this.cursorLocation.x = r.start.x;
         this.cursorLocation.y = r.start.y;
@@ -216,7 +214,7 @@ class TextEditorModel {
 
         lines.set(cursorLocation.y, sb.toString());
 
-        undoManager.push(new EditAction(EditAction.Action.TEXT_ADD, cursorLocation, Character.toString(c)));
+        undoManager.push(new EditActionAdd(cursorLocation, Character.toString(c)));
 
         this.cursorLocation.x ++;
         notifyTextObservers();
@@ -237,7 +235,7 @@ class TextEditorModel {
             }
         }
 
-        undoManager.push(new EditAction(EditAction.Action.TEXT_ADD, cursorLocation, text));
+        undoManager.push(new EditActionAdd(cursorLocation, text));
         
         // lots of computation for little gain,
         // TODO: optimize
@@ -304,12 +302,12 @@ class TextEditorModel {
     }
 
     void undo() {
-        undoManager.undo(this);
+        undoManager.undo();
         notifyTextObservers();
     }
 
     void redo() {
-        undoManager.redo(this);
+        undoManager.redo();
         notifyTextObservers();
     }
 
@@ -346,6 +344,127 @@ class TextEditorModel {
         }
         return true;
     }
+
+    class EditActionDelete implements EditAction {
+
+        private Location location;
+        private String text;
+
+        EditActionDelete (Location location, String text) {
+            this.location = new Location(location);
+            this.text = text;
+        }
+
+        public void execute_do() {
+            deleteChars();
+            notifyTextObservers();
+        }
+
+        public void execute_undo() {
+            insert();
+            notifyTextObservers();
+        }
+
+
+        // briše broj znakova od pozicije kursora
+        void deleteChars(){
+            int n = text.length();
+            for(int y = location.y; n > 0; y++) {
+                String line = lines.get(y);
+                int startx = y == location.y ? location.x : 0;
+                int endx = n < line.length() - startx ? startx + n : line.length();
+                
+                if(startx == 0 && endx == line.length()) {
+                    // TODO potential off by one error with '\n' chars
+                    n -= lines.remove(y).length() + 1;
+                    y--;
+                }
+                else {
+                    StringBuilder sb = new StringBuilder(line);
+                    sb.delete(startx, endx);
+                    lines.set(y, sb.toString());
+                    n -= endx - startx;
+                }
+            }
+        }
+
+        // umeće proizvoljan tekst (potencijalno više redaka) na mjesto na kojem je kursor i pomiče se kursor
+        void insert() {
+            StringBuffer sb = new StringBuffer(lines.get(location.y));
+            sb.insert(location.x, text);
+            String[] newlines = sb.toString().split("\n");
+
+            lines.set(location.y, newlines[0]);
+
+            if(newlines.length > 1) {
+                int y = location.y;
+                for(int i = 1; i < newlines.length; i++) {
+                    lines.add( ++y, newlines[i]);
+                }
+            }
+        }
+    }
+
+    class EditActionAdd implements EditAction {
+
+        private Location location;
+        private String text;
+
+        EditActionAdd (Location location, String text) {
+            this.location = new Location(location);
+            this.text = text;
+        }
+
+        public void execute_do() {
+            insert();
+            notifyTextObservers();
+        }
+        
+        public void execute_undo() {
+            deleteChars();
+            notifyTextObservers();
+        }
+
+
+        // briše broj znakova od pozicije kursora
+        void deleteChars(){
+            int n = text.length();
+            for(int y = location.y; n > 0; y++) {
+                String line = lines.get(y);
+                int startx = y == location.y ? location.x : 0;
+                int endx = n < line.length() - startx ? startx + n : line.length();
+                
+                if(startx == 0 && endx == line.length()) {
+                    // TODO potential off by one error with '\n' chars
+                    n -= lines.remove(y).length() + 1;
+                    y--;
+                }
+                else {
+                    StringBuilder sb = new StringBuilder(line);
+                    sb.delete(startx, endx);
+                    lines.set(y, sb.toString());
+                    n -= endx - startx;
+                }
+            }
+        }
+
+        // umeće proizvoljan tekst (potencijalno više redaka) na mjesto na kojem je kursor i pomiče se kursor
+        void insert() {
+            StringBuffer sb = new StringBuffer(lines.get(location.y));
+            sb.insert(location.x, text);
+            String[] newlines = sb.toString().split("\n");
+
+            lines.set(location.y, newlines[0]);
+
+            if(newlines.length > 1) {
+                int y = location.y;
+                for(int i = 1; i < newlines.length; i++) {
+                    lines.add( ++y, newlines[i]);
+                }
+            }
+        }
+    }
+
 
 }
 

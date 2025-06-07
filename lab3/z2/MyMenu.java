@@ -91,8 +91,8 @@ public class MyMenu extends JMenuBar implements UndoManagerSubscriber, Clipboard
         saveItem.addActionListener((event) -> tem.save());
         exitItem.addActionListener((event) -> System.exit(0));
 
-        undoItem.addActionListener((event) -> undoManager.undo(tem));
-        redoItem.addActionListener((event) -> undoManager.redo(tem));
+        undoItem.addActionListener((event) -> undoManager.undo());
+        redoItem.addActionListener((event) -> undoManager.redo());
         cutItem.addActionListener((event) -> tem.cutSeleciton());
         copyItem.addActionListener((event) -> tem.copySelection());
         pasteItem.addActionListener((event) -> tem.softPaste());
