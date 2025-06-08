@@ -12,6 +12,7 @@ import javax.swing.JComponent;
 
 import src.hr.fer.ooup.lab4.model.DocumentModel;
 import src.hr.fer.ooup.lab4.model.GraphicalObject;
+import src.hr.fer.ooup.lab4.model.Point;
 import src.hr.fer.ooup.lab4.model.Renderer;
 import src.hr.fer.ooup.lab4.model.state.State;
 import src.hr.fer.ooup.lab4.model.state.StateListener;
@@ -56,17 +57,17 @@ public class Canvas extends JComponent implements KeyListener, StateListener, Mo
     
     @Override
     public void mousePressed(MouseEvent e) {
-        guiState.mouseDown(e.getPoint(), e.isShiftDown(), e.isControlDown());
+        guiState.mouseDown(new Point(e.getPoint()), e.isShiftDown(), e.isControlDown());
     }
     
     @Override
     public void mouseReleased(MouseEvent e) {
-        guiState.mouseUp(e.getPoint(), e.isShiftDown(), e.isControlDown());
+        guiState.mouseUp(new Point(e.getPoint()), e.isShiftDown(), e.isControlDown());
     }
     
     @Override
     public void mouseDragged(MouseEvent e) {
-        guiState.mouseDragged(e.getPoint());
+        guiState.mouseDragged(new Point(e.getPoint()));
     }
 
 

@@ -1,5 +1,8 @@
 package src.hr.fer.ooup.lab4.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Oval extends AbstractGraphicalObject {
 
 	public final static double RESOLUTION = 50;
@@ -34,12 +37,11 @@ public class Oval extends AbstractGraphicalObject {
         int miny = Math.min(hp1.getY(), hp2.getY());
         int dx = maxx-minx;
         int dy = maxy-miny;
-        return new Rectangle(minx-dx, miny-dy, dx, dy);
+        return new Rectangle(minx-dx, miny-dy, 2*dx, 2*dy);
     }
 
     @Override
     public double selectionDistance(Point mousePoint) {
-        this.center = new Point(getHotPoint(0).getX(), getHotPoint(1).getY());
         return GeometryUtil.distanceFromPoint(this.center, mousePoint) 
             - Math.max(
                 GeometryUtil.distanceFromPoint(getHotPoint(0), center),
@@ -57,30 +59,18 @@ public class Oval extends AbstractGraphicalObject {
     }
     @Override
     public void render(Renderer r) {
-        final int hpSize = 2;
         
         Point h1 = getHotPoint(0);
         Point h2 = getHotPoint(1);
-        Point prevPoint = getHotPoint(0);
-        System.out.println(center.getX() + "x y" + center.getY());
-        for(double a = 0; a < Math.TAU; a += Math.TAU / 50) {
-            Point nextPoint = new Point(
+        System.out.println(center.getX() + "x y " + center.getY());
+        List<Point> ovalPoints = new ArrayList<>();
+        for(double a = 0; a < Math.TAU; a += Math.TAU / RESOLUTION) {
+            ovalPoints.add(new Point(
                 (int)( center.getX() + (h1.getX()-center.getX())*Math.cos(a) ), 
-                (int)( center.getY() + (h2.getY()-center.getY())*Math.sin(a) ));
-
-            r.drawLine(prevPoint, nextPoint);
-
-            prevPoint = nextPoint;
+                (int)( center.getY() + (h2.getY()-center.getY())*Math.sin(a) )));
+            
         }
-
-
-        for(int i = 0; i < getNumberOfHotPoints(); i++) {
-            Point p = getHotPoint(i);
-            r.fillPolygon(new Point[]{
-                new Point(p.getX()-hpSize, p.getY()-hpSize), 
-                new Point(p.getX()-hpSize, p.getY()+hpSize), 
-                new Point(p.getX()+hpSize, p.getY()+hpSize),
-                new Point(p.getX()+hpSize, p.getY()-hpSize)});
-        }
+        r.fillPolygon(ovalPoints.toArray(new Point[0]));
+        
     }
 }

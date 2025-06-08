@@ -15,6 +15,7 @@ import src.hr.fer.ooup.lab4.model.DocumentModelListener;
 import src.hr.fer.ooup.lab4.model.GraphicalObject;
 import src.hr.fer.ooup.lab4.model.state.AddShapeState;
 import src.hr.fer.ooup.lab4.model.state.IdleState;
+import src.hr.fer.ooup.lab4.model.state.SelectShapeState;
 import src.hr.fer.ooup.lab4.model.state.State;
 import src.hr.fer.ooup.lab4.model.state.StateListener;
 
@@ -29,7 +30,7 @@ public class GUI extends JFrame {
 
     private DocumentModelListener modelListener = new DocumentModelListener() {
         public void documentChange() {
-            System.out.println(":repainting");
+			System.out.println("repainting");
             canvas.repaint();
         };
     };
@@ -54,6 +55,13 @@ public class GUI extends JFrame {
             menuBar.add(button);
         }
 
+        JMenuItem selectItem = new JMenuItem("Select");
+        selectItem.addActionListener((e) -> {
+			changeState(new SelectShapeState(model));
+        });
+
+		menuBar.add(selectItem);
+
         // primjerak platna za crtanje 
         this.canvas = new Canvas(model);
         addStateListener(canvas);
@@ -65,7 +73,7 @@ public class GUI extends JFrame {
     }
 
     private void changeState(State state) {
-        state.onLeaving();
+        this.state.onLeaving();
         this.state = state;
         notifyStateListeners();
     }

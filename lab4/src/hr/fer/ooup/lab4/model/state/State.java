@@ -1,8 +1,8 @@
 package src.hr.fer.ooup.lab4.model.state;
 
-import java.awt.Point;
 
 import src.hr.fer.ooup.lab4.model.GraphicalObject;
+import src.hr.fer.ooup.lab4.model.Point;
 import src.hr.fer.ooup.lab4.model.Renderer;
 
 public interface State {

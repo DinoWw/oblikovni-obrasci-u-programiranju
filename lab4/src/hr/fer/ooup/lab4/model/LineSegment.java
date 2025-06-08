@@ -36,16 +36,6 @@ public class LineSegment extends AbstractGraphicalObject {
     }
     @Override
     public void render(Renderer r) {
-        final int hpSize = 2;
-        
         r.drawLine(getHotPoint(0), getHotPoint(1));
-        for(int i = 0; i < getNumberOfHotPoints(); i++) {
-            Point p = getHotPoint(i);
-            r.fillPolygon(new Point[]{
-                new Point(p.getX()-hpSize, p.getY()-hpSize), 
-                new Point(p.getX()-hpSize, p.getY()+hpSize), 
-                new Point(p.getX()+hpSize, p.getY()+hpSize),
-                new Point(p.getX()+hpSize, p.getY()-hpSize)});
-        }
     }
 }
