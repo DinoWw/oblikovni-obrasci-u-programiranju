@@ -54,6 +54,7 @@ public abstract class AbstractGraphicalObject implements GraphicalObject{
         for(int i = 0; i < hotPoints.length; i++) {
             hotPoints[i] = hotPoints[i].translate(point);
         }
+        alertGraphicalObjectChanged();
     }
 
     public void addGraphicalObjectListener(GraphicalObjectListener lis) {

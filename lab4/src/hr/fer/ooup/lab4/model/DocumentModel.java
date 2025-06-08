@@ -115,6 +115,7 @@ public class DocumentModel {
             return;
         objects.remove(index);
         objects.add(index + 1, go);
+        notifyListeners();
     }
 	
 	// Pomakni predani objekt u listi objekata na jedno mjesto ranije...
@@ -123,7 +124,9 @@ public class DocumentModel {
         if(index <= 0)
             return;
         objects.remove(index);
-        objects.add(index - 1, go);}
+        objects.add(index - 1, go);
+        notifyListeners();
+    }
 	
 	// Pronađi postoji li u modelu neki objekt koji klik na točku koja je
 	// predana kao argument selektira i vrati ga ili vrati null. Točka selektira

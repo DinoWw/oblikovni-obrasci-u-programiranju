@@ -1,7 +1,10 @@
 // visual studio forsira src. 
 package src.hr.fer.ooup.lab4;
 
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +33,6 @@ public class GUI extends JFrame {
 
     private DocumentModelListener modelListener = new DocumentModelListener() {
         public void documentChange() {
-			System.out.println("repainting");
             canvas.repaint();
         };
     };
@@ -68,6 +70,18 @@ public class GUI extends JFrame {
         canvas.setSize(this.getWidth(), this.getHeight()-menuBar.getHeight());
         canvas.requestFocusInWindow();
         add(canvas);
+
+        KeyboardFocusManager.getCurrentKeyboardFocusManager()
+        .addKeyEventDispatcher(new KeyEventDispatcher() {
+            @Override
+            public boolean dispatchKeyEvent(KeyEvent e) {
+                if(e.getKeyCode() == 0) {       // esc
+                    changeState(new IdleState());
+                }
+                return false;
+            }
+        });
+
 
         notifyStateListeners();
     }

@@ -21,9 +21,19 @@ public class SelectShapeState implements State {
 
     @Override
     public void mouseDown(Point mousePoint, boolean shiftDown, boolean ctrlDown) {
-        if(!ctrlDown) {
-            List<GraphicalObject> selected = model.getSelectedObjects();
+        List<GraphicalObject> selected = model.getSelectedObjects();
+        if(selected.size() == 1) {    //drag control points
+            GraphicalObject o = selected.get(0);
+            for(int i = 0; i < o.getNumberOfHotPoints(); i++) {
+                if(o.getHotPointDistance(i, mousePoint) <= DocumentModel.SELECTION_PROXIMITY) {
+                    o.setHotPointSelected(i, true);
+                    return;
+                }
+            }
+        }
 
+
+        if(!ctrlDown) {
             for(int i = selected.size()-1; i >= 0; i--) {
                 selected.get(i).setSelected(false);
             }
@@ -37,19 +47,71 @@ public class SelectShapeState implements State {
 
     @Override
     public void mouseUp(Point mousePoint, boolean shiftDown, boolean ctrlDown) {
+        List<GraphicalObject> selected = model.getSelectedObjects();
+        if(selected.size() == 1) {
+            GraphicalObject o = selected.get(0);
+            for(int i = o.getNumberOfHotPoints()-1; i >= 0; i--) {
+                o.setHotPointSelected(i, false);
+            }
+        }
     }
 
     @Override
     public void mouseDragged(Point mousePoint) {
+        System.out.println("dragged");
+        List<GraphicalObject> selected = model.getSelectedObjects();
+        if(selected.size() == 1) {    //drag control points
+        System.out.println("dragged only one");
+            GraphicalObject o = selected.get(0);
+            for(int i = 0; i < o.getNumberOfHotPoints(); i++) {
+                if(o.isHotPointSelected(i)) {
+        System.out.println("dragged selected");
+        System.out.println("mouse" + mousePoint.getX() + "x y" + mousePoint.getY());
+        Point hp = o.getHotPoint(i);
+        System.out.println("hp" + hp.getX() + "x y" + hp.getY());
+                    o.setHotPoint(i, hp.translate(mousePoint.difference(hp)));
+                }
+            }
+        }
     }
 
     @Override
     public void keyPressed(int keyCode) {
+        System.out.println(keyCode);
         switch (keyCode) {
-            case 0:
-                
+            case 61:    // plus
+            {
+                List<GraphicalObject> selected = model.getSelectedObjects();
+                for(int i = selected.size()-1; i >= 0; i--) {
+                    model.increaseZ(selected.get(i));
+                }
                 break;
-        
+            }
+            case 45:    // minus
+            {
+                model.getSelectedObjects().forEach(o -> model.decreaseZ(o));
+                break;
+            }
+            case 37:    // left
+            {
+                model.getSelectedObjects().forEach(o -> o.translate(new Point(-1, 0)));
+                break;
+            }
+            case 38:    // up
+            {
+                model.getSelectedObjects().forEach(o -> o.translate(new Point(0, -1)));
+                break;
+            }
+            case 39:    // right
+            {
+                model.getSelectedObjects().forEach(o -> o.translate(new Point(1, 0)));
+                break;
+            }
+            case 40:    // down
+            {
+                model.getSelectedObjects().forEach(o -> o.translate(new Point(0, 1)));
+                break;
+            }
             default:
                 break;
         }
@@ -96,6 +158,11 @@ public class SelectShapeState implements State {
 
     @Override
     public void onLeaving() {
+
+        List<GraphicalObject> selected = model.getSelectedObjects();
+        for(int i = selected.size()-1; i >= 0; i--) {
+            selected.get(i).setSelected(false);
+        }
     }
     
 }

@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "stdlib.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "zadatak2-mymax": "cpp",
+        "ranges": "cpp"
     }
 }

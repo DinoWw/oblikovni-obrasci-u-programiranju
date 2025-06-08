@@ -62,7 +62,6 @@ public class Oval extends AbstractGraphicalObject {
         
         Point h1 = getHotPoint(0);
         Point h2 = getHotPoint(1);
-        System.out.println(center.getX() + "x y " + center.getY());
         List<Point> ovalPoints = new ArrayList<>();
         for(double a = 0; a < Math.TAU; a += Math.TAU / RESOLUTION) {
             ovalPoints.add(new Point(
@@ -73,4 +72,13 @@ public class Oval extends AbstractGraphicalObject {
         r.fillPolygon(ovalPoints.toArray(new Point[0]));
         
     }
+
+
+    @Override
+    public void setHotPoint(int index, Point point) {
+        // TODO Auto-generated method stub
+        super.setHotPoint(index, point);
+        calculateCenter();
+    }
+
 }
