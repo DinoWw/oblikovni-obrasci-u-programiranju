@@ -94,6 +94,7 @@ public class GUI extends JFrame {
 
     public void addStateListener(StateListener listener) { 
         this.stateListeners.add(listener);
+        listener.stateChanged(state);
     }
 
     public void removeStateListener(StateListener listener) {

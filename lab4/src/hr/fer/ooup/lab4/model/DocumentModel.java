@@ -88,6 +88,7 @@ public class DocumentModel {
 	// Prijava...
 	public void addDocumentModelListener(DocumentModelListener l) {
         this.listeners.add(l);
+        l.documentChange();
     }
 	
 	// Odjava...

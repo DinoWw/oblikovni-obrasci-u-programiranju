@@ -59,6 +59,8 @@ public abstract class AbstractGraphicalObject implements GraphicalObject{
 
     public void addGraphicalObjectListener(GraphicalObjectListener lis) {
         this.listeners.add(lis);
+        lis.graphicalObjectChanged(this);
+        lis.graphicalObjectSelectionChanged(this);
     }
 
     public void removeGraphicalObjectListener(GraphicalObjectListener lis) {
